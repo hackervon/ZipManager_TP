@@ -6,31 +6,36 @@ import java.util.Arrays;
 import java. util. Scanner;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
+import org.apache.commons.cli.*;
 
-// eclair -c mon_archive.zip fichier1.txt fichier2.jpg fichier3.wav
-// eclair -x mon_archive.zip $HOME/Documents
 public class App {
 
-    private static boolean eclair() throws ZipException {
-        Scanner scanner = new Scanner( System. in);
-        String inputString = scanner. nextLine();
-        String[] arrOfStr = inputString.split(" ");
-        if (!arrOfStr[0].equals("eclair")) return false;
-        if(arrOfStr[1] .equals( "-x")){
-            new ZipFile(arrOfStr[2]).extractAll(arrOfStr[3]);
-        }
-        else if(arrOfStr[1].equals("-c")){
-            String[] tmpArr =Arrays.copyOfRange(arrOfStr,3,arrOfStr.length-1);
-            for (String str:tmpArr){
-                new ZipFile(arrOfStr[2]).addFile(str);
+    private static boolean eclair(String[] args) throws ZipException, ParseException {
+        Options options = new Options();
+        options.addOption("x", true, "extract");
+        options.addOption("c", true, "zip");
+        CommandLineParser parser = new DefaultParser();
+        CommandLine cmd = parser.parse( options, args);
+        if(cmd.hasOption("x")) {
+            String zipFile = cmd.getOptionValue('x');
+            String[] arguments= cmd.getArgs();
+            for (String str:arguments){
+                new ZipFile(zipFile).addFile(str);
             }
         }
-        else return false;
+        else if(cmd.hasOption("c")){
+            String zipFile = cmd.getOptionValue('c');
+            String[] arguments= cmd.getArgs();
+            new ZipFile(zipFile).extractAll(arguments[0]);
+        }
+        else {
+            return false;
+        }
         return true;
     }
     public static void main(String[] args) {
         try{
-         if(!eclair()){
+         if(!eclair(args)){
              System.out.println("la commande que vous avez écrit est erronée");
          }
         }
